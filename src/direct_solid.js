@@ -6,6 +6,7 @@ function DirectSolid() {
     return function (sql, callBack, opts) {
         opts = opts || {};
         callBack = callBack || function (results, params) {
+                _Log.fatal('_DirectSolid 无回调方法sql：' + sql);
             };
         opts.type = opts.type || 'SELECT';
         _Utils.dbQuery(sql, callBack, opts);

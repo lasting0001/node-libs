@@ -10,7 +10,7 @@ var logger = function () {
     var level = 'TRACE';
     if ('production' === CONST_ENV) {
         //level = 'TRACE';
-        level = 'TRACE';
+        level = 'INFO';
     }
     logger.setLevel(level);
     return logger;

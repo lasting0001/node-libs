@@ -198,6 +198,26 @@ var Util = function () {
                 _Utils.setCookieAndStore(res, [cookie], params);
                 res.end('{"code":0}');
             });
+        },
+        // 必须要独立一个use里面
+        checkAndInfoPartnerAndChannel: function (req) {
+            if (CONST_ENV !== 'development' && (!req.query.partner_id || !req.query.channel_id || isNaN(req.query.partner_id) || isNaN(req.query.channel_id))) {
+                _Log.fatal('nginx解析Id错误 query：' + JSON.stringify(req.query));
+                req.query.partner_id = 28;
+                req.query.channel_id = 40;
+            }
+            var partner_id = req.query.partner_id = parseInt(req.query.partner_id);
+            var channel_id = req.query.channel_id = parseInt(req.query.channel_id);
+            _RocketPieceCache.getPiece(CACHE_PIECE_TYPE.PARTNER_INFO_BY_ID, [partner_id], function (result) {
+                if (result) {
+                    result = result[0];
+                    req._partner_id = partner_id;
+                    req._channel_id = channel_id;
+                    req._is_private = result.is_private;
+                    return next();
+                }
+                return _BackClient(res)(ERROR_CODE.AUTH_ERROR, '该平台不存在~');
+            });
         }
     };
 };
