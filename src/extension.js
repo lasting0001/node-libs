@@ -89,7 +89,8 @@ String.prototype.replaceAll = function (find, rep) {
     return (this + '').replace(new RegExp(find, 'gm'), rep);
 };
 
-// 对于本身就有DATE_FORMAT(date,"%Y-%m-%d")的语句，切参数个数大于1的不兼容
+// 对于sql语句本身就有DATE_FORMAT(date,"%Y-%m-%d")的语句，
+// 需更改为双%的形式DATE_FORMAT(date,"%%Y-%%m-%%d")，而且参数个数最多只能一个
 String.prototype.format = function () {
     var str = this + '';
     var repls = arguments;
