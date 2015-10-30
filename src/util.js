@@ -7,7 +7,10 @@ var _xmlreader = require("xmlreader");
 
 
 var Util = function () {
-
+    var strAll0 = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    var max0 = strAll0.length;
+    var strAll1 = "0123456789";
+    var max1 = strAll1.length;
     return {
         random: function (min, max) {
             var c = max - min;
@@ -16,37 +19,19 @@ var Util = function () {
         randomTo: function (max) {
             return Math.floor(Math.random() * max);
         },
-        dbQuery: function (sql, callBack, params) {
-            var dbPoolName = params.dbPoolName || COMMON_PARAM.DEFAULT_DB;
-            if (!sql) {
-                _Log.error('Util dbQuery sql参数错误:' + sql + ',dbPoolName:' + dbPoolName);
-                callBack(null, params);
-                return;
+        ranStr: function (len) {
+            var token = '';
+            for (var i = 0; i < len; i++) {
+                token += strAll0[_Utils.randomTo(max0)];
             }
-            params.sql = sql;
-            var dbPool = _DBPool[dbPoolName];
-            if (!dbPool) {
-                _Log.error('Util dbQuery 连接池错误 dbPool:' + dbPool);
-                callBack(null, params);
-                return;
+            return token;
+        },
+        ranNum: function (len) {
+            var token = '';
+            for (var i = 0; i < len; i++) {
+                token += strAll1[_Utils.randomTo(max1)];
             }
-            dbPool.getConnection(function (err, conn) {
-                if (err) {
-                    _Log.fatalObj('getConnection error,sql:' + sql + ':', err);
-                    callBack(null, params);
-                    return;
-                }
-                var query = conn.query(sql, params.columns || [], function (err, results) {
-                    conn.release();
-                    if (err) {
-                        _Log.fatalObj('query error,sql:' + sql + ':', err);
-                        callBack(null, params);
-                        return;
-                    }
-                    callBack(results, params);
-                });
-                _Log.trace(query.sql);
-            });
+            return token;
         },
         md5: function (input) {
             return _md5(input);
@@ -87,14 +72,6 @@ var Util = function () {
                 callBack(null, xmlObj);
             });
         },
-        getDateFormat: function (format, date) {
-            if (!format) {
-                format = 'yyyyMMddhhmmss'
-            } else if (format === '-') {
-                format = 'yyyy-MM-dd hh:mm:ss';
-            }
-            return (date || new Date()).format(format);
-        },
         getClientIp: function (req) {
             return req.headers['x-forwarded-for'] ||
                 req.connection.remoteAddress ||
@@ -111,9 +88,6 @@ var Util = function () {
         },
         getRedisTokenTey: function (uid) {
             return "user:" + uid + ":token";
-        },
-        getTotalDataKey: function (e) {
-            return (e.date || '') + '_' + (e.partner_id || '') + '_' + ( e.game_id || '');
         },
         // 自定义cookie必须在最前面
         setCookieAndStore: function (res, cookie, params, callBack) {
@@ -199,7 +173,7 @@ var Util = function () {
                 res.end('{"code":0}');
             });
         },
-        // 必须要独立一个use里面
+        // 必须要在一个独立的use里面
         checkAndInfoPartnerAndChannel: function (req) {
             if (CONST_ENV !== 'development' && (!req.query.partner_id || !req.query.channel_id || isNaN(req.query.partner_id) || isNaN(req.query.channel_id))) {
                 _Log.fatal('nginx解析Id错误 query：' + JSON.stringify(req.query));
